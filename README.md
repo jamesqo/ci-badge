@@ -38,4 +38,6 @@ $ ci-badge -t $REPO | xclip
 
 # Windows
 $ ci-badge -t $REPO | clip
+
+# Now you can Ctrl-V the badge into GitHub
 ```
