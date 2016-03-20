@@ -26,3 +26,16 @@ $ ci-badge -mt $REPO -l # links to a particular URL when the badge is clicked
 # default is the CI's status page for your repo
 [![](https://travis-ci.org/foo/bar.svg?branch=master)](https://travis-ci.org/foo/bar)
 ```
+
+## Copying to the clipboard
+
+```bash
+# Mac
+$ ci-badge -t $REPO | pbcopy
+
+# Linux
+$ ci-badge -t $REPO | xclip
+
+# Windows
+$ ci-badge -t $REPO | clip
+```
