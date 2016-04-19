@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+badge_url()
+{
+    case "$service" in
+        appveyor)
+            echo "https://ci.appveyor.com/api/projects/status/github/$repo?branch=$branch&svg=true" ;;
+        travis)
+            echo "https://travis-ci.org/$repo.svg?branch=$branch" ;;
+    esac
+}
+
+die()
+{
+    usage 1>&2
+    exit 1
+}
+
+imagify()
+{
+    echo "![$description]($1)"
+}
+
+linkify()
+{
+    echo "[$1]($url)"
+}
+
+status_url()
+{
+    # Generates the URL to the CI's status page.
+    case "$service" in
+        appveyor)
+            echo "https://ci.appveyor.com/project/$repo?branch=$branch" ;;
+        travis)
+            echo "https://travis-ci.org/$repo" ;; # Travis' status page is independent of branch 
+    esac
+}
+
+usage()
+{
+    
+}
+
+branch=master
+generate_url=false # set to true if -l is passed with no arg
+markdown=false # true -> surround the URL with markdown
+
+# Parse options
+while getopts ':tab:md:l:' opt
+do
+    case "$opt" in
+        a) service=appveyor ;;
+        b) branch=$OPTARG ;;
+        d) description=$OPTARG ;;
+        l) url=$OPTARG ;;
+        m) markdown=true ;;
+        t) service=travis ;;
+        # Colon: runs if no args are passed to
+        # an option that normally requires parameters.
+        :) test "$OPTARG" = l && generate_url=true ;;
+        # ?: Runs if an invalid option is passed.
+        '?') die ;;
+    esac
+done
+
+# Ensure that $service is set
+test ! -z "$service" || die
+
+# Generate the URL to the CI's status page, if necessary
+$generate_url && url=$(status_url)
+
+# If -m isn't passed, then -d and -l options shouldn't be valid
+if ! $markdown; then
+    test -z "$url" || die
+    test -z "$description" || die
+fi
+
+# Do the work
+output=$(badge_url)
+! $markdown && echo "$output" && exit 0
+
+# Decorate with ![]()
+output=$(imagify "$output")
+test -z "$url" && echo "$output" && exit 0
+
+# Decorate further with []($url)
+output=$(linkify "$output")
+echo "$output"
