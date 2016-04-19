@@ -42,26 +42,34 @@ usage()
     
 }
 
-branch=master
+branch=master # Git branch to link to
 generate_url=false # set to true if -l is passed with no arg
 markdown=false # true -> surround the URL with markdown
 
 # Parse options
-while getopts ':tab:md:l:' opt
+while [ $# -gt 0 ]
 do
-    case "$opt" in
-        a) service=appveyor ;;
-        b) branch=$OPTARG ;;
-        d) description=$OPTARG ;;
-        l) url=$OPTARG ;;
-        m) markdown=true ;;
-        t) service=travis ;;
-        # Colon: runs if no args are passed to
-        # an option that normally requires parameters.
-        :) test "$OPTARG" = l && generate_url=true ;;
-        # ?: Runs if an invalid option is passed.
-        '?') die ;;
-    esac
+    while getopts ':tab:md:l:' opt
+    do
+        case "$opt" in
+            a) service=appveyor ;;
+            b) branch=$OPTARG ;;
+            d) description=$OPTARG ;;
+            l) url=$OPTARG ;;
+            m) markdown=true ;;
+            t) service=travis ;;
+            # Colon: runs if no args are passed to
+            # an option that normally requires parameters.
+            :) test "$OPTARG" = l && generate_url=true ;;
+            # ?: Runs if an invalid option is passed.
+            '?') die ;;
+        esac
+    done
+    
+    # Parse non-option args if present
+    shift $((OPTIND - 1))
+    test "$1" = '--' && shift # -- -> treat everything else as a non-option
+    repo=$1 # The value of $repo isn't tied to an option
 done
 
 # Ensure that $service is set
